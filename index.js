@@ -9,7 +9,6 @@ function generateIgnoreSets(data) {
     }
     dataItem.items.forEach((item) => {
       if (item.ignore) {
-        console.log(item);
         const ignoreSet = [{ items: [{ value: item.value }] }];
         item.ignore.forEach((ignoreItem) => {
           if (!ignoreItem.items) {
