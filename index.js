@@ -2,6 +2,17 @@ function groupByName(data, name) {
   return data.find((item) => item.block === name);
 }
 
+function allItemValues(groups) {
+  return groups.reduce((acc, group) => {
+    acc = acc.concat(group.items.map((item) => item.value).filter((itemValue) => itemValue.length));
+    return acc;
+  }, []);
+}
+
+function allOtherItemValues(groups, thisgroupItems) {
+  return outersectArray(allItemValues(groups), thisgroupItems);
+}
+
 function combinations(data) {
   const result = [];
 
@@ -49,29 +60,49 @@ function groupItems(name, groups) {
   return [name];
 }
 
+function simpleCombinations(itemValue, list = [], groups) {
+  let arrays = [];
+  list.forEach((string) => {
+    const otherGroupItems = groupItems(string, groups);
+    otherGroupItems.forEach((otherGroupItem) => {
+      arrays.push([itemValue, otherGroupItem]);
+    });
+  });
+  return arrays;
+}
+
+function expandIncludes(list, groups) {
+  let arr = [];
+  if (!list) {
+    return [];
+  }
+  list.forEach((string) => {
+    arr = arr.concat(groupItems(string, groups));
+  });
+  return arr;
+}
+
+function outersectArray(inclusionArray, exclusionArray) {
+  return inclusionArray.filter((item) => !exclusionArray.includes(item));
+}
+
 function generateIgnoreArrays(groups) {
   let arrays = [];
   groups.forEach((group) => {
     const thisGroupItems = groupItems(group.block, groups);
-    if (group.ignore) {
-      group.ignore.forEach((string) => {
-        const otherGroupItems = groupItems(string, groups);
-        thisGroupItems.forEach((thisGroupItem) => {
-          otherGroupItems.forEach((otherGroupItem) => {
-            arrays.push([thisGroupItem, otherGroupItem]);
-          });
-        });
-      });
+    const expandedIncludes = expandIncludes(group.include, groups);
+    if (expandedIncludes.length) {
+      group.ignore = (group.ignore || []).concat(outersectArray(allOtherItemValues(groups, thisGroupItems), expandedIncludes));
     }
+    thisGroupItems.forEach((thisGroupItem) => {
+      arrays = arrays.concat(simpleCombinations(thisGroupItem, group.ignore, groups));
+    });
     group.items.forEach((item) => {
-      if (item.ignore) {
-        item.ignore.forEach((string) => {
-          const otherGroupItems = groupItems(string, groups);
-          otherGroupItems.forEach((otherGroupItem) => {
-            arrays.push([item.value, otherGroupItem]);
-          });
-        });
+      const expandedIncludes = expandIncludes(item.include, groups);
+      if (expandedIncludes.length) {
+        item.ignore = (item.ignore || []).concat(outersectArray(allOtherItemValues(groups, thisGroupItems), expandedIncludes));
       }
+      arrays = arrays.concat(simpleCombinations(item.value, item.ignore, groups));
     });
   });
   return arrays;
