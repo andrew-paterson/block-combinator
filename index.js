@@ -1,34 +1,5 @@
-function generateIgnoreSets(data) {
-  const ignoreSets = [];
-  data.forEach((dataItem) => {
-    if (dataItem.ignore) {
-      dataItem.items.forEach((item) => {
-        item.ignore = item.ignore || [];
-        item.ignore = item.ignore.concat(dataItem.ignore);
-      });
-    }
-    dataItem.items.forEach((item) => {
-      if (item.ignore) {
-        const ignoreSet = [{ items: [{ value: item.value }] }];
-        item.ignore.forEach((ignoreItem) => {
-          if (!ignoreItem.items) {
-            ignoreItem.items = data.find((item) => item.block === ignoreItem.block).items;
-          }
-          ignoreItem.items = ignoreItem.items.map((i) => {
-            if (typeof i === 'string') {
-              return { value: i };
-            } else {
-              return i;
-            }
-          });
-          ignoreItem.items.push({ value: '' });
-          ignoreSet.push(ignoreItem);
-        });
-        ignoreSets.push(ignoreSet);
-      }
-    });
-  });
-  return ignoreSets;
+function groupByName(data, name) {
+  return data.find((item) => item.block === name);
 }
 
 function combinations(data) {
@@ -69,16 +40,46 @@ function parseIncoming(rawData) {
     return item;
   });
 }
+
+function groupItems(name, groups) {
+  const group = groupByName(groups, name);
+  if (group) {
+    return group.items.map((item) => item.value).filter((itemValue) => itemValue.length);
+  }
+  return [name];
+}
+
+function generateIgnoreArrays(groups) {
+  let arrays = [];
+  groups.forEach((group) => {
+    const thisGroupItems = groupItems(group.block, groups);
+    if (group.ignore) {
+      group.ignore.forEach((string) => {
+        const otherGroupItems = groupItems(string, groups);
+        thisGroupItems.forEach((thisGroupItem) => {
+          otherGroupItems.forEach((otherGroupItem) => {
+            arrays.push([thisGroupItem, otherGroupItem]);
+          });
+        });
+      });
+    }
+    group.items.forEach((item) => {
+      if (item.ignore) {
+        item.ignore.forEach((string) => {
+          const otherGroupItems = groupItems(string, groups);
+          otherGroupItems.forEach((otherGroupItem) => {
+            arrays.push([item.value, otherGroupItem]);
+          });
+        });
+      }
+    });
+  });
+  return arrays;
+}
+
 module.exports = function (rawData, opts = {}) {
   const data = parseIncoming(rawData);
-  const ignoreSets = generateIgnoreSets(data);
-  const ignoreArrays = ignoreSets
-    .reduce((acc, ignoreSet) => {
-      return acc.concat(combinations(ignoreSet));
-    }, [])
-    .map((item) => item.filter((item) => item.length))
-    .filter((item) => item.length > 1);
-
+  const ignoreArrays = generateIgnoreArrays(data);
   return combinations(data)
     .map((item) => item.filter((part) => part.length))
     .filter((item) => {

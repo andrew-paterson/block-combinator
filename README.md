@@ -89,30 +89,26 @@ blockCombinator(data);
 ];
 ```
 
-## Ignoring blocks and items
+## Ignoring at block level
 
-A block can ignore other blocks entirely, ot items within other blocks.
-An individual item can also ignore other blocks entirely, ot items within other blocks.
+An array of strings can be passed to the `ignore` prop.
 
-Note that members of a blocks `items` array can be strings, or an object where `value` is a string. This allows us to add `ignore` on the item.
+These strings can either be the names of blocks, or the value of items within a block.
 
-Note that ignore rules will only affect blocks or itemd from blocks that come after the current block.
+For blocks named in the `ignore` array, the final set of combinations will exclude those combinations which have any items from the current block along with any items from the ignored block.
+
+For item values named in the `ignore` array the final set of combinations will exclude those combinations which have any items from the current block along the item value in the ignored item value.
 
 ```javascript
 const data = [
   {
     block: 'colours',
     items: ['red', 'orange'],
-    ignore: [
-      {
-        block: 'numbers',
-        items: ['1'],
-      },
-    ],
+    ignore: ['numbers', 'square'],
   },
   {
     block: 'numbers',
-    items: ['1', { value: '2', ignore: [{ block: 'shapes' }] }],
+    items: ['1', '2'],
   },
   {
     block: 'shapes',
@@ -122,13 +118,57 @@ const data = [
 blockCombinator(data);
 // RESULT
 [
+  ['red', 'circle'],
+  ['orange', 'circle'],
+  ['1', 'circle'],
+  ['1', 'square'],
+  ['2', 'circle'],
+  ['2', 'square'],
+];
+```
+
+## Ignoring at the item level
+
+Note that members of a blocks `items` array can be strings, or an object where `value` is a string. This allows us to add an `ignore` array to the item.
+
+An array of strings can be passed to the `ignore` prop.
+
+These strings can either be the names of blocks, or the value of items within a block.
+
+For blocks named in the `ignore` array, the final set of combinations will exclude the value of the curent item along with any items from the ignored block.
+
+For item values named in the `ignore` array the final set of combinations will exclude the value of the curent item along the item value in the ignored item value.
+
+```javascript
+const data = [
+  {
+    block: 'colours',
+    items: ['red', { value: 'orange', ignore: ['shapes', '1'] }],
+  },
+  {
+    block: 'numbers',
+    items: ['1', '2'],
+  },
+  {
+    block: 'shapes',
+    items: ['circle', 'square'],
+  },
+];
+blockCombinator(data);
+// RESULT
+[
+  ['red', '1', 'circle'],
+  ['red', '1', 'square'],
+  ['red', '1'],
+  ['red', '2', 'circle'],
+  ['red', '2', 'square'],
   ['red', '2'],
   ['red', 'circle'],
   ['red', 'square'],
   ['orange', '2'],
-  ['orange', 'circle'],
-  ['orange', 'square'],
   ['1', 'circle'],
   ['1', 'square'],
+  ['2', 'circle'],
+  ['2', 'square'],
 ];
 ```

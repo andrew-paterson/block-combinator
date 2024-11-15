@@ -9,6 +9,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "flat": "^6.0.1",
     "tag-and-release": "^1.0.19"
   }
 }
