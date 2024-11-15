@@ -89,22 +89,22 @@ blockCombinator(data);
 ];
 ```
 
-## Ignoring at block level
+## neverWithAnyOf at block level
 
-An array of strings can be passed to the `ignore` prop.
+An array of strings can be passed to the `neverWithAnyOf` prop.
 
 These strings can either be the names of blocks, or the value of items within a block.
 
-For blocks named in the `ignore` array, the final set of combinations will exclude those combinations which have any items from the current block along with any items from the ignored block.
+For blocks named in the `neverWithAnyOf` array, the final set of combinations will exclude those combinations which have any items from the current block along with any items from the ignored block.
 
-For item values named in the `ignore` array the final set of combinations will exclude those combinations which have any items from the current block along the item value in the ignored item value.
+For item values named in the `neverWithAnyOf` array the final set of combinations will exclude those combinations which have any items from the current block along the item value in the ignored item value.
 
 ```javascript
 const data = [
   {
     block: 'colours',
     items: ['red', 'orange'],
-    ignore: ['numbers', 'square'],
+    neverWithAnyOf: ['numbers', 'square'],
   },
   {
     block: 'numbers',
@@ -127,23 +127,23 @@ blockCombinator(data);
 ];
 ```
 
-## Ignoring at the item level
+## neverWithAnyOf at the item level
 
-Note that members of a blocks `items` array can be strings, or an object where `value` is a string. This allows us to add an `ignore` array to the item.
+Note that members of a blocks `items` array can be strings, or an object where `value` is a string. This allows us to add an `neverWithAnyOf` array to the item.
 
-An array of strings can be passed to the `ignore` prop.
+An array of strings can be passed to the `neverWithAnyOf` prop.
 
 These strings can either be the names of blocks, or the value of items within a block.
 
-For blocks named in the `ignore` array, the final set of combinations will exclude the value of the curent item along with any items from the ignored block.
+For blocks named in the `neverWithAnyOf` array, the final set of combinations will exclude the value of the curent item along with any items from the ignored block.
 
-For item values named in the `ignore` array the final set of combinations will exclude the value of the curent item along the item value in the ignored item value.
+For item values named in the `neverWithAnyOf` array the final set of combinations will exclude the value of the curent item along the item value in the ignored item value.
 
 ```javascript
 const data = [
   {
     block: 'colours',
-    items: ['red', { value: 'orange', ignore: ['shapes', '1'] }],
+    items: ['red', { value: 'orange', neverWithAnyOf: ['shapes', '1'] }],
   },
   {
     block: 'numbers',
@@ -173,13 +173,13 @@ blockCombinator(data);
 ];
 ```
 
-## Including at the item level
+## onlyWithExactCombination at the item level
 
 ```javascript
 const data = [
   {
     block: 'colours',
-    items: ['red', { value: 'orange', include: ['1', 'circle'] }],
+    items: ['red', { value: 'orange', onlyWithExactCombination: ['1', 'circle'] }],
   },
   {
     block: 'numbers',

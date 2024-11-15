@@ -115,13 +115,13 @@ const testSchemas = [
     ],
   },
   {
-    title: 'Ignoring at block level',
+    title: 'neverWithAnyOf at block level',
     testFunction() {
       return blockCombinator([
         {
           block: 'colours',
           items: ['red', 'orange'],
-          ignore: ['numbers', 'square'],
+          neverWithAnyOf: ['numbers', 'square'],
         },
         {
           block: 'numbers',
@@ -143,12 +143,12 @@ const testSchemas = [
     ],
   },
   {
-    title: 'Ignoring at the item level',
+    title: 'neverWithAnyOf at the item level',
     testFunction() {
       return blockCombinator([
         {
           block: 'colours',
-          items: ['red', { value: 'orange', ignore: ['shapes', '1'] }],
+          items: ['red', { value: 'orange', neverWithAnyOf: ['shapes', '1'] }],
         },
         {
           block: 'numbers',
@@ -177,12 +177,44 @@ const testSchemas = [
     ],
   },
   {
-    title: 'Including at the item level',
+    title: 'onlyWithExactCombination at the block level',
     testFunction() {
       return blockCombinator([
         {
           block: 'colours',
-          items: ['red', { value: 'orange', include: ['1', 'circle'] }],
+          onlyWithExactCombination: ['1', 'circle'],
+          items: ['red', 'orange'],
+        },
+        {
+          block: 'numbers',
+          items: ['1', '2'],
+        },
+        {
+          block: 'shapes',
+          items: ['circle', 'square'],
+        },
+      ]);
+    },
+    expectation: [
+      ['red', '1', 'circle'],
+      ['red', '1'],
+      ['red', 'circle'],
+      ['orange', '1', 'circle'],
+      ['orange', '1'],
+      ['orange', 'circle'],
+      ['1', 'circle'],
+      ['1', 'square'],
+      ['2', 'circle'],
+      ['2', 'square'],
+    ],
+  },
+  {
+    title: 'onlyWithExactCombination at the item level',
+    testFunction() {
+      return blockCombinator([
+        {
+          block: 'colours',
+          items: ['red', { value: 'orange', onlyWithExactCombination: ['1', 'circle'] }],
         },
         {
           block: 'numbers',

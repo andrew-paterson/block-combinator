@@ -82,9 +82,9 @@ function outersectArray(inclusionArray, exclusionArray) {
 }
 
 function expandIgnored(entity, groups, thisGroupItems) {
-  const expandedIncludes = expandIncludes(entity.include, groups);
+  const expandedIncludes = expandIncludes(entity.onlyWithExactCombination, groups);
   if (expandedIncludes.length) {
-    entity.ignore = (entity.ignore || []).concat(outersectArray(allOtherItemValues(groups, thisGroupItems), expandedIncludes));
+    entity.neverWithAnyOf = (entity.neverWithAnyOf || []).concat(outersectArray(allOtherItemValues(groups, thisGroupItems), expandedIncludes));
   }
 }
 
@@ -94,11 +94,11 @@ function generateIgnoreArrays(groups) {
     const thisGroupItems = groupItems(group.block, groups);
     expandIgnored(group, groups, thisGroupItems);
     thisGroupItems.forEach((thisGroupItem) => {
-      arrays = arrays.concat(simpleCombinations(thisGroupItem, group.ignore, groups));
+      arrays = arrays.concat(simpleCombinations(thisGroupItem, group.neverWithAnyOf, groups));
     });
     group.items.forEach((item) => {
       expandIgnored(item, groups, thisGroupItems);
-      arrays = arrays.concat(simpleCombinations(item.value, item.ignore, groups));
+      arrays = arrays.concat(simpleCombinations(item.value, item.neverWithAnyOf, groups));
     });
   });
   return arrays;
