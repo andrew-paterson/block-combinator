@@ -173,7 +173,13 @@ blockCombinator(data);
 ];
 ```
 
+## onlyWithExactCombination at the block level
+
+Note that for any item listed here, there must be at least one item listed from each preceding block.
+
 ## onlyWithExactCombination at the item level
+
+Note that for any item listed here, there must be at least one item listed from each preceding block.
 
 ```javascript
 const data = [

@@ -9,11 +9,11 @@ function allItemValues(groups) {
   }, []);
 }
 
-function allOtherItemValues(groups, thisGroupItems) {
+function getAllOtherItemValues(groups, thisGroupItems) {
   return outersectArray(allItemValues(groups), thisGroupItems);
 }
 
-function combinations(groups) {
+function combinations(arrays) {
   const result = [];
   function combine(prefix, arrays) {
     if (arrays.length === 0) {
@@ -26,7 +26,6 @@ function combinations(groups) {
       combine([...prefix, item.value], remainingArrays);
     }
   }
-  const arrays = groups.map((item) => item.items);
   combine([], arrays);
   return result;
 }
@@ -66,7 +65,7 @@ function simpleCombinations(itemValue, list = [], groups) {
   return arrays;
 }
 
-function expandIncludes(list, groups) {
+function expandItemList(list, groups) {
   let arr = [];
   if (!list) {
     return [];
@@ -81,42 +80,84 @@ function outersectArray(inclusionArray, exclusionArray) {
   return inclusionArray.filter((item) => !exclusionArray.includes(item));
 }
 
-function expandIgnored(entity, groups, thisGroupItems) {
-  const expandedIncludes = expandIncludes(entity.onlyWithExactCombination, groups);
-  if (expandedIncludes.length) {
-    entity.neverWithAnyOf = (entity.neverWithAnyOf || []).concat(outersectArray(allOtherItemValues(groups, thisGroupItems), expandedIncludes));
+function intersectArray(array1, array2) {
+  return array1.filter((item) => array2.includes(item));
+}
+
+function arraysMatchExactly(array1, array2) {
+  if (array1.length !== array2.length) {
+    return false;
   }
+
+  const sortedArray1 = array1.slice().sort();
+  const sortedArray2 = array2.slice().sort();
+
+  for (let i = 0; i < sortedArray1.length; i++) {
+    if (sortedArray1[i] !== sortedArray2[i]) {
+      return false;
+    }
+  }
+  return true;
+}
+
+function expandIgnored(entity, groups, thisGroupItems, ignored = [], string, callerLevel) {
+  ignored = ignored.concat(simpleCombinations(string, entity.neverWithAnyOf, groups));
+
+  const allCombinationsWithString = combinations(groups.map((item) => item.items))
+    .filter((combination) => combination.includes(string))
+    .map((array) => array.filter((item) => item.length));
+
+  const onlyWithExactCombinationExpanded = expandItemList(entity.onlyWithExactCombination, groups);
+  if (onlyWithExactCombinationExpanded.length) {
+    ignored = ignored.concat(allCombinationsWithString.filter((combination) => !arraysMatchExactly(combination, [string, ...onlyWithExactCombinationExpanded])).map((combination) => [...combination, { matchlength: true }]));
+  }
+  const onlyWithAnyOfExpanded = expandItemList(entity.onlyWithAnyOf, groups);
+  if (onlyWithAnyOfExpanded.length) {
+    ignored = ignored.concat(allCombinationsWithString.filter((combination) => !intersectArray(combination, onlyWithAnyOfExpanded).length).map((combination) => [...combination, { matchlength: true }]));
+  }
+  return ignored;
 }
 
 function generateIgnoreArrays(groups) {
-  let arrays = [];
+  let ignored = [];
   groups.forEach((group) => {
     const thisGroupItems = groupItems(group.block, groups);
-    expandIgnored(group, groups, thisGroupItems);
     thisGroupItems.forEach((thisGroupItem) => {
-      arrays = arrays.concat(simpleCombinations(thisGroupItem, group.neverWithAnyOf, groups));
+      ignored = expandIgnored(group, groups, thisGroupItems, ignored, thisGroupItem, 'group');
     });
     group.items.forEach((item) => {
-      expandIgnored(item, groups, thisGroupItems);
-      arrays = arrays.concat(simpleCombinations(item.value, item.neverWithAnyOf, groups));
+      ignored = expandIgnored(item, groups, thisGroupItems, ignored, item.value, 'item');
     });
   });
-  return arrays;
+  return ignored;
 }
 
 module.exports = function (rawData, opts = {}) {
   const groups = parseIncoming(rawData);
   const ignoreArrays = generateIgnoreArrays(groups);
-  return combinations(groups)
+  return combinations(groups.map((item) => item.items))
     .map((item) => item.filter((part) => part.length))
     .filter((item) => {
       if (item.length < (opts.minLength || 2)) {
         return false;
       }
       return !ignoreArrays.some((ignoreArray) => {
-        return ignoreArray.every((ignoreItem) => {
-          return item.includes(ignoreItem);
-        });
+        let matchlength = false;
+        if (ignoreArray.find((item) => item && typeof item === 'object')) {
+          matchlength = true;
+        }
+        const ignoreArrayStrings = [...ignoreArray].filter((item) => typeof item === 'string');
+        if (matchlength) {
+          return (
+            ignoreArrayStrings.every((ignoreItem) => {
+              return item.includes(ignoreItem);
+            }) && item.length === ignoreArrayStrings.length
+          );
+        } else {
+          return ignoreArrayStrings.every((ignoreItem) => {
+            return item.includes(ignoreItem);
+          });
+        }
       });
     });
 };

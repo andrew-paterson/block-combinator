@@ -3,6 +3,7 @@ const chalk = require('chalk');
 const testSchemas = [
   {
     title: 'Basic usage',
+    skip: false,
     testFunction() {
       return blockCombinator([
         {
@@ -44,6 +45,7 @@ const testSchemas = [
   },
   {
     title: 'Min length',
+    skip: false,
     testFunction() {
       return blockCombinator(
         [
@@ -78,6 +80,7 @@ const testSchemas = [
   },
   {
     title: 'Required blocks',
+    skip: false,
     testFunction() {
       return blockCombinator([
         {
@@ -116,6 +119,7 @@ const testSchemas = [
   },
   {
     title: 'neverWithAnyOf at block level',
+    skip: false,
     testFunction() {
       return blockCombinator([
         {
@@ -144,6 +148,7 @@ const testSchemas = [
   },
   {
     title: 'neverWithAnyOf at the item level',
+    skip: false,
     testFunction() {
       return blockCombinator([
         {
@@ -178,6 +183,7 @@ const testSchemas = [
   },
   {
     title: 'onlyWithExactCombination at the block level',
+    skip: false,
     testFunction() {
       return blockCombinator([
         {
@@ -197,11 +203,7 @@ const testSchemas = [
     },
     expectation: [
       ['red', '1', 'circle'],
-      ['red', '1'],
-      ['red', 'circle'],
       ['orange', '1', 'circle'],
-      ['orange', '1'],
-      ['orange', 'circle'],
       ['1', 'circle'],
       ['1', 'square'],
       ['2', 'circle'],
@@ -210,6 +212,7 @@ const testSchemas = [
   },
   {
     title: 'onlyWithExactCombination at the item level',
+    skip: false,
     testFunction() {
       return blockCombinator([
         {
@@ -236,7 +239,62 @@ const testSchemas = [
       ['red', 'circle'],
       ['red', 'square'],
       ['orange', '1', 'circle'],
+      ['1', 'circle'],
+      ['1', 'square'],
+      ['2', 'circle'],
+      ['2', 'square'],
+    ],
+  },
+  {
+    title: 'OnlwWithAnyOf at the block level',
+    skip: false,
+    testFunction() {
+      return blockCombinator([
+        {
+          block: 'colours',
+          onlyWithAnyOf: ['numbers', 'circle'],
+          items: ['red', 'orange'],
+        },
+        {
+          block: 'numbers',
+          items: ['1', '2'],
+        },
+        {
+          block: 'shapes',
+          items: ['circle', 'square'],
+        },
+      ]);
+    },
+    expectation: [
+      ['red', '1', 'circle'],
+      ['red', '1', 'square'],
+      ['red', '1'],
+      ['red', '2', 'circle'],
+      ['red', '2', 'square'],
+      ['red', '2'],
+      ['red', 'circle'],
+      ['orange', '1', 'circle'],
+      ['orange', '1', 'square'],
       ['orange', '1'],
+      ['orange', '2', 'circle'],
+      ['orange', '2', 'square'],
+      ['orange', '2'],
+      ['orange', 'circle'],
+      ['1', 'circle'],
+      ['1', 'square'],
+      ['2', 'circle'],
+      ['2', 'square'],
+    ],
+    found: [
+      ['red', '1', 'circle'],
+      ['red', '1'],
+      ['red', '2', 'circle'],
+      ['red', '2'],
+      ['red', 'circle'],
+      ['orange', '1', 'circle'],
+      ['orange', '1'],
+      ['orange', '2', 'circle'],
+      ['orange', '2'],
       ['orange', 'circle'],
       ['1', 'circle'],
       ['1', 'square'],
@@ -247,6 +305,9 @@ const testSchemas = [
 ];
 
 testSchemas.forEach((testSchema) => {
+  if (testSchema.skip) {
+    return;
+  }
   const result = JSON.stringify(testSchema.testFunction());
   const expectation = JSON.stringify(testSchema.expectation);
   if (result !== expectation) {
