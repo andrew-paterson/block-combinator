@@ -1,5 +1,5 @@
-function groupByName(data, name) {
-  return data.find((item) => item.block === name);
+function groupByName(groups, name) {
+  return groups.find((item) => item.block === name);
 }
 
 function allItemValues(groups) {
@@ -9,46 +9,41 @@ function allItemValues(groups) {
   }, []);
 }
 
-function allOtherItemValues(groups, thisgroupItems) {
-  return outersectArray(allItemValues(groups), thisgroupItems);
+function allOtherItemValues(groups, thisGroupItems) {
+  return outersectArray(allItemValues(groups), thisGroupItems);
 }
 
-function combinations(data) {
+function combinations(groups) {
   const result = [];
-
   function combine(prefix, arrays) {
     if (arrays.length === 0) {
       result.push(prefix);
       return;
     }
-
     const firstArray = arrays[0];
     const remainingArrays = arrays.slice(1);
-
     for (const item of firstArray) {
       combine([...prefix, item.value], remainingArrays);
     }
   }
-
-  const arrays = data.map((item) => item.items);
+  const arrays = groups.map((item) => item.items);
   combine([], arrays);
-
   return result;
 }
+
 function parseIncoming(rawData) {
-  return rawData.map((item) => {
-    if (!item.required) {
-      item.items.push('');
+  return rawData.map((group) => {
+    if (!group.required) {
+      group.items.push('');
     }
-    item.items = item.items.map((i) => {
+    group.items = group.items.map((i) => {
       if (typeof i === 'string') {
         return { value: i };
       } else {
         return i;
       }
     });
-
-    return item;
+    return group;
   });
 }
 
@@ -86,22 +81,23 @@ function outersectArray(inclusionArray, exclusionArray) {
   return inclusionArray.filter((item) => !exclusionArray.includes(item));
 }
 
+function expandIgnored(entity, groups, thisGroupItems) {
+  const expandedIncludes = expandIncludes(entity.include, groups);
+  if (expandedIncludes.length) {
+    entity.ignore = (entity.ignore || []).concat(outersectArray(allOtherItemValues(groups, thisGroupItems), expandedIncludes));
+  }
+}
+
 function generateIgnoreArrays(groups) {
   let arrays = [];
   groups.forEach((group) => {
     const thisGroupItems = groupItems(group.block, groups);
-    const expandedIncludes = expandIncludes(group.include, groups);
-    if (expandedIncludes.length) {
-      group.ignore = (group.ignore || []).concat(outersectArray(allOtherItemValues(groups, thisGroupItems), expandedIncludes));
-    }
+    expandIgnored(group, groups, thisGroupItems);
     thisGroupItems.forEach((thisGroupItem) => {
       arrays = arrays.concat(simpleCombinations(thisGroupItem, group.ignore, groups));
     });
     group.items.forEach((item) => {
-      const expandedIncludes = expandIncludes(item.include, groups);
-      if (expandedIncludes.length) {
-        item.ignore = (item.ignore || []).concat(outersectArray(allOtherItemValues(groups, thisGroupItems), expandedIncludes));
-      }
+      expandIgnored(item, groups, thisGroupItems);
       arrays = arrays.concat(simpleCombinations(item.value, item.ignore, groups));
     });
   });
@@ -109,9 +105,9 @@ function generateIgnoreArrays(groups) {
 }
 
 module.exports = function (rawData, opts = {}) {
-  const data = parseIncoming(rawData);
-  const ignoreArrays = generateIgnoreArrays(data);
-  return combinations(data)
+  const groups = parseIncoming(rawData);
+  const ignoreArrays = generateIgnoreArrays(groups);
+  return combinations(groups)
     .map((item) => item.filter((part) => part.length))
     .filter((item) => {
       if (item.length < (opts.minLength || 2)) {

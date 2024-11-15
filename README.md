@@ -172,3 +172,40 @@ blockCombinator(data);
   ['2', 'square'],
 ];
 ```
+
+## Including at the item level
+
+```javascript
+const data = [
+  {
+    block: 'colours',
+    items: ['red', { value: 'orange', include: ['1', 'circle'] }],
+  },
+  {
+    block: 'numbers',
+    items: ['1', '2'],
+  },
+  {
+    block: 'shapes',
+    items: ['circle', 'square'],
+  },
+];
+// RESULT
+[
+  ['red', '1', 'circle'],
+  ['red', '1', 'square'],
+  ['red', '1'],
+  ['red', '2', 'circle'],
+  ['red', '2', 'square'],
+  ['red', '2'],
+  ['red', 'circle'],
+  ['red', 'square'],
+  ['orange', '1', 'circle'],
+  ['orange', '1'],
+  ['orange', 'circle'],
+  ['1', 'circle'],
+  ['1', 'square'],
+  ['2', 'circle'],
+  ['2', 'square'],
+];
+```

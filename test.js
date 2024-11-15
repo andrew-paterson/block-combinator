@@ -43,6 +43,40 @@ const testSchemas = [
     ],
   },
   {
+    title: 'Min length',
+    testFunction() {
+      return blockCombinator(
+        [
+          {
+            block: 'colours',
+            items: ['red', 'orange'],
+          },
+          {
+            block: 'numbers',
+            items: ['1', '2'],
+          },
+          {
+            block: 'shapes',
+            items: ['circle', 'square'],
+          },
+        ],
+        {
+          minLength: 3,
+        }
+      );
+    },
+    expectation: [
+      ['red', '1', 'circle'],
+      ['red', '1', 'square'],
+      ['red', '2', 'circle'],
+      ['red', '2', 'square'],
+      ['orange', '1', 'circle'],
+      ['orange', '1', 'square'],
+      ['orange', '2', 'circle'],
+      ['orange', '2', 'square'],
+    ],
+  },
+  {
     title: 'Required blocks',
     testFunction() {
       return blockCombinator([
@@ -181,11 +215,12 @@ const testSchemas = [
 ];
 
 testSchemas.forEach((testSchema) => {
-  const result = testSchema.testFunction();
-  if (JSON.stringify(result) !== JSON.stringify(testSchema.expectation)) {
+  const result = JSON.stringify(testSchema.testFunction());
+  const expectation = JSON.stringify(testSchema.expectation);
+  if (result !== expectation) {
     console.log(chalk.red(`Test failed: ${testSchema.title}`));
-    console.log(`Expected: ${testSchema.expectation}`);
-    console.log(`Received: ${result}`);
+    console.log(`Expected: ${chalk.green(expectation)}`);
+    console.log(`Received: ${chalk.red(result)}`);
   } else {
     console.log(chalk.green(`Test passed: ${testSchema.title}`));
   }
