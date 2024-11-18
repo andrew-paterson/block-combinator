@@ -182,13 +182,13 @@ const testSchemas = [
     ],
   },
   {
-    title: 'onlyWithExactCombination at the block level',
+    title: 'onlyWithExactCombinations at the block level',
     skip: false,
     testFunction() {
       return blockCombinator([
         {
           block: 'colours',
-          onlyWithExactCombination: ['1', 'circle'],
+          onlyWithExactCombinations: ['1', 'circle'],
           items: ['red', 'orange'],
         },
         {
@@ -211,13 +211,13 @@ const testSchemas = [
     ],
   },
   {
-    title: 'onlyWithExactCombination at the item level',
+    title: 'onlyWithExactCombinations at the item level',
     skip: false,
     testFunction() {
       return blockCombinator([
         {
           block: 'colours',
-          items: ['red', { value: 'orange', onlyWithExactCombination: ['1', 'circle'] }],
+          items: ['red', { value: 'orange', onlyWithExactCombinations: ['1', 'circle'] }],
         },
         {
           block: 'numbers',

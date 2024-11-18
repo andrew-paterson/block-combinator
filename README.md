@@ -173,11 +173,11 @@ blockCombinator(data);
 ];
 ```
 
-## onlyWithExactCombination at the block level
+## onlyWithExactCombinations at the block level
 
 Note that for any item listed here, there must be at least one item listed from each preceding block.
 
-## onlyWithExactCombination at the item level
+## onlyWithExactCombinations at the item level
 
 Note that for any item listed here, there must be at least one item listed from each preceding block.
 
@@ -185,7 +185,7 @@ Note that for any item listed here, there must be at least one item listed from 
 const data = [
   {
     block: 'colours',
-    items: ['red', { value: 'orange', onlyWithExactCombination: ['1', 'circle'] }],
+    items: ['red', { value: 'orange', onlyWithExactCombinations: ['1', 'circle'] }],
   },
   {
     block: 'numbers',
