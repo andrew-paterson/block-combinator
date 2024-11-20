@@ -56,10 +56,6 @@ function expandItemList(list, groups) {
   return arr;
 }
 
-function intersectArray(array1, array2) {
-  return array1.filter((item) => array2.includes(item));
-}
-
 function arraysMatchExactly(array1, array2) {
   if (array1.length !== array2.length) {
     return false;
@@ -82,6 +78,26 @@ function allStringsPresent(array1, array2) {
 
 function someStringsPresent(array1, array2) {
   return array1.some((item) => array2.includes(item));
+}
+
+function allCombinationsPresent(array, combinations) {
+  for (var combinationString of combinations) {
+    combinationArray = combinationString.split('+').map((item) => item.trim());
+    if (!allStringsPresent(combinationArray, array)) {
+      return false;
+    }
+  }
+  return true;
+}
+
+function someCombinationsPresent(array, combinations) {
+  for (var combinationString of combinations) {
+    combinationArray = combinationString.split('+').map((item) => item.trim());
+    if (allStringsPresent(combinationArray, array)) {
+      return true;
+    }
+  }
+  return false;
 }
 
 function oneStringFromEachgroupPresent(array, groups) {
@@ -120,20 +136,20 @@ function filterItems(arrays, entity, groups, filterType) {
           const organisedCombinations = organiseIntoGroups([item, ...expandedFiltersList], groups);
           const allExactCombinations = combinations(organisedCombinations);
           for (var exactCombination of allExactCombinations) {
-            if (allStringsPresent(exactCombination, array)) {
+            if (allCombinationsPresent(array, exactCombination)) {
               return true;
             }
           }
           return false;
         } else if (filterType === 'neverWithAnyOf') {
           const expandedFiltersList = expandItemList(entity[filterType], groups);
-          return !someStringsPresent(array, expandedFiltersList);
+          return !someCombinationsPresent(array, expandedFiltersList);
         } else if (filterType === 'neverWithAllOf') {
           const expandedFiltersList = expandItemList(entity[filterType], groups);
           const organisedCombinations = organiseIntoGroups([item, ...expandedFiltersList], groups);
           const allExactCombinations = combinations(organisedCombinations);
           for (var exactCombination of allExactCombinations) {
-            if (allStringsPresent(exactCombination, array)) {
+            if (allCombinationsPresent(array, exactCombination)) {
               return false;
             }
           }
@@ -150,7 +166,7 @@ function filterItems(arrays, entity, groups, filterType) {
           return false;
         } else if (filterType === 'onlyWithAnyOf') {
           const expandedFiltersList = expandItemList(entity[filterType], groups);
-          return someStringsPresent(array, expandedFiltersList);
+          return someCombinationsPresent(array, expandedFiltersList);
         } else {
           return true;
         }
